@@ -3,7 +3,7 @@ use std::fs::read;
 use tokio::fs;
 use aws_sdk_lambda as lambda;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum FileType {
     Python,
     Go,
@@ -27,7 +27,7 @@ pub(crate) fn file_detection(filename: &str) -> FileType {
     }
 }
 
-pub fn zip_file(filename:&str, file_type: FileType) -> std::io::Result<()> {
+pub fn zip_file(filename:&str) -> std::io::Result<()> {
     let mut zip = zip::ZipWriter::new(std::fs::File::create("deployment.zip")?);
     let file_contents = std::fs::read_to_string(filename)?;
     let options = zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
@@ -38,11 +38,12 @@ pub fn zip_file(filename:&str, file_type: FileType) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn remove_file(file_type: FileType){
+pub fn post_deployment_cleanup(file_type: FileType)->std::io::Result<()>{
 
-    match file_type{
+    match file_type {
         FileType::Python=>{
-
+            fs::remove_file("deployment.zip");
+            Ok(())
         }
         _ => {panic!("File not recognised")}
     }
@@ -62,4 +63,7 @@ fn test_file_detection() {
 fn test_file_detection_panic() {
     file_detection("test.rs");
     panic!("This program should panic as the filetype is not supported yet.");
+}
+fn test_remove_unsupported_file(){
+    post_deployment_cleanup(FileType::Nodejs);
 }
