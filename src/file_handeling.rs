@@ -1,7 +1,8 @@
 use std::io::Write;
-use std::fs::read;
+use std::fs::{read};
 use tokio::fs;
 use aws_sdk_lambda as lambda;
+use std::process::Command;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum FileType {
@@ -27,21 +28,39 @@ pub(crate) fn file_detection(filename: &str) -> FileType {
     }
 }
 
-pub fn zip_file(filename:&str) -> std::io::Result<()> {
-    let mut zip = zip::ZipWriter::new(std::fs::File::create("deployment.zip")?);
-    let file_contents = std::fs::read_to_string(filename)?;
-    let options = zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
-    zip.start_file(filename, options)?;
+pub fn zip_file(filename:&str,file_type:FileType) -> std::io::Result<()> {
+    return match file_type {
+        FileType::Go => {
+            Command::new("zsh").arg("-c").arg("GOOS=linux GOARCH=amd64 go build -o main ").arg(filename).output().expect("failed to execute process");
+            Command::new("zsh").arg("-c").arg("zip deployment.zip main").output().expect("Failed to zip program");
+            Ok(())
+        }
+        FileType::Nodejs => {
+            Command::new("zsh").arg("-c").arg("zip deployment.zip index.js").output().expect("Failed to zip program");
+            Ok(())
+        }
 
-    zip.write_all(file_contents.as_bytes())?;
-    zip.finish()?;
-    Ok(())
+        FileType::Python => {
+            let mut zip = zip::ZipWriter::new(std::fs::File::create("deployment.zip")?);
+            let file_contents = std::fs::read_to_string(filename)?;
+            let options = zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
+            zip.start_file(filename, options)?;
+
+            zip.write_all(file_contents.as_bytes())?;
+            zip.finish()?;
+            Ok(())
+        }
+    }
 }
 
 pub fn post_deployment_cleanup(file_type: FileType)->std::io::Result<()>{
 
     match file_type {
         FileType::Python=>{
+            fs::remove_file("deployment.zip");
+            Ok(())
+        }
+        FileType::Go=>{
             fs::remove_file("deployment.zip");
             Ok(())
         }
@@ -62,8 +81,9 @@ fn test_file_detection() {
 #[should_panic]
 fn test_file_detection_panic() {
     file_detection("test.rs");
-    panic!("This program should panic as the filetype is not supported yet.");
 }
+#[test]
+#[should_panic]
 fn test_remove_unsupported_file(){
-    post_deployment_cleanup(FileType::Nodejs);
+    post_deployment_cleanup(FileType::Nodejs).expect( "This should fail");
 }

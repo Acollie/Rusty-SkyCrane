@@ -1,6 +1,7 @@
 # Rusty SkyCrane
 
-A simple cli to upload bits of code to lambda
+Sky crane is a rust cli utility to upload and update AWS lambda code.
+Then a lambda with the same name is detected the code will be updated instead.
 
 ## Usage
 
@@ -10,9 +11,10 @@ If the function exists the program will update the code.
 ## Supported filetypes
 - Python
 - Go
-- Node
 
 
-## TODO
+## Working in progress 
 - [ ] Allow for role to be created on the fly
+- [ ] Detect program dependencies 
 - [ ] Auto zip dependencies
+- [ ] Add Nodejs support
