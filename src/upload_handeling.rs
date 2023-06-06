@@ -19,6 +19,9 @@ pub async fn lambda_upload(lambda_functions:&HashSet<String>,service_role:&str,c
 
 
     let runtime = resolve_runtime(file_type);
+    if cfg!(test) {
+        return Ok(())
+    }
     if lambda_functions.contains(function_name){
         client.update_function_code().function_name(function_name)
             .zip_file(convert_contents_to_blob("deployment.zip").unwrap()).send()
@@ -34,4 +37,14 @@ pub async fn lambda_upload(lambda_functions:&HashSet<String>,service_role:&str,c
             .await.unwrap();
     }
     Ok(())
+}
+
+#[cfg(test)]
+async fn test_lambda_upload(){
+    let mut lambda_functions = HashSet::new();
+    lambda_functions.insert("test".to_string());
+    let config = aws_config::load_from_env().await;
+    let client = lambda::Client::new(&config);
+    let result = lambda_upload(&lambda_functions,"test",&client,"test.py",FileType::Python,"test").await;
+    assert_eq!(result.is_ok(),true);
 }

@@ -76,12 +76,34 @@ fn test_file_detection() {
     assert_eq!(file_detection("test.js"), FileType::Nodejs);
 
 }
+#[test]
+fn test_file_detection_fail() {
+    assert_ne!(file_detection("test.py"), FileType::Go);
+    assert_ne!(file_detection("test.go"), FileType::Python);
+    assert_ne!(file_detection("test.js"), FileType::Python);
+    assert_ne!(file_detection("test.py"), FileType::Nodejs);
+    assert_ne!(file_detection("test.go"), FileType::Nodejs);
+    assert_ne!(file_detection("test.js"), FileType::Go);
+}
+#[test]
+fn test_zip_file() {
+    zip_file("test.py", FileType::Python).expect("Failed to zip file");
+    zip_file("test.go", FileType::Go).expect("Failed to zip file");
+    zip_file("test.js", FileType::Nodejs).expect("Failed to zip file");
+}
+
+#[test]
+fn test_convert_contents_to_blob() {
+    let blob = convert_contents_to_blob("test.py").expect("Failed to convert contents to blob");
+    assert_eq!(blob.as_ref(), read("test.py").expect("Failed to read file"));
+}
 
 #[test]
 #[should_panic]
 fn test_file_detection_panic() {
     file_detection("test.rs");
 }
+
 #[test]
 #[should_panic]
 fn test_remove_unsupported_file(){
