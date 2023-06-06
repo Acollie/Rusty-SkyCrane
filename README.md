@@ -1,8 +1,8 @@
 # Rusty SkyCrane
-
 Sky crane is a rust cli utility to upload and update AWS lambda code.
 Then a lambda with the same name is detected the code will be updated instead.
 
+[![Rust](https://github.com/Acollie/Rusty-SkyCrane/actions/workflows/run_tests.yml/badge.svg)](https://github.com/Acollie/Rusty-SkyCrane/actions/workflows/run_tests.yml)
 ## Usage
 
 ```bash cargo run <filename> <function_name> <role arn>```
