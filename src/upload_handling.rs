@@ -1,20 +1,20 @@
 use std::collections::HashSet;
 use std::fs::read;
 use aws_sdk_lambda::types::{FunctionCode};
-use crate::file_handeling::{convert_contents_to_blob, FileType};
+use crate::file_handling::{convert_contents_to_blob, FileType};
 use aws_sdk_lambda as lambda;
 use aws_sdk_lambda::Client;
-use crate::{file_handeling, resolve_runtime};
+use crate::{file_handling, resolve_runtime};
 
 pub async fn lambda_upload(lambda_functions:&HashSet<String>,service_role:&str,client:&Client,filename:&str,file_type:FileType,function_name:&str)->Result<(),()>{
-    file_handeling::zip_file(filename,file_type).unwrap();
+    file_handling::zip_file(filename, file_type).unwrap();
     let file_contents = read("deployment.zip").unwrap();
     let blob = lambda::primitives::Blob::new(file_contents);
     let function_code = FunctionCode::builder()
         .zip_file(blob)
         .build();
 
-    file_handeling::zip_file(filename,file_type).unwrap();
+    file_handling::zip_file(filename, file_type).unwrap();
     let file_without_extension = filename.split(".").next().unwrap();
 
 
@@ -39,7 +39,7 @@ pub async fn lambda_upload(lambda_functions:&HashSet<String>,service_role:&str,c
     Ok(())
 }
 
-#[cfg(test)]
+#[tokio::test]
 async fn test_lambda_upload(){
     let mut lambda_functions = HashSet::new();
     lambda_functions.insert("test".to_string());

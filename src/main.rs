@@ -1,11 +1,11 @@
-mod file_handeling;
-mod upload_handeling;
+mod file_handling;
+mod upload_handling;
 mod handle_role;
-mod lambda_handeling;
+mod lambda_handling;
 
 use aws_sdk_lambda as lambda;
-use crate::file_handeling::{FileType, post_deployment_cleanup};
-use crate::upload_handeling::{lambda_upload};
+use crate::file_handling::{FileType, post_deployment_cleanup};
+use crate::upload_handling::{lambda_upload};
 
 fn resolve_runtime(file_type: FileType) -> lambda::types::Runtime {
     match file_type {
@@ -24,12 +24,11 @@ async fn main()-> Result<(), Box<dyn std::error::Error>>{
     let client = lambda::Client::new(&config);
 
 
-
     let filename = &args[1];
     let function_name = &args[2];
     let service_role = &args[3];
-    let file_type = file_handeling::file_detection(filename);
-    let functions_names = lambda_handeling::get_lambda_names(&client).await;
+    let file_type = file_handling::file_detection(filename);
+    let functions_names = lambda_handling::get_lambda_names(&client).await;
 
     lambda_upload(&functions_names, service_role, &client, filename, file_type, function_name).await.expect("TODO: panic message");
 
@@ -37,3 +36,4 @@ async fn main()-> Result<(), Box<dyn std::error::Error>>{
 
     Ok(())
 }
+
