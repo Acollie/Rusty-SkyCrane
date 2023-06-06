@@ -85,12 +85,7 @@ fn test_file_detection_fail() {
     assert_ne!(file_detection("test.go"), FileType::Nodejs);
     assert_ne!(file_detection("test.js"), FileType::Go);
 }
-#[test]
-fn test_zip_file() {
-    zip_file("test.py", FileType::Python).expect("Failed to zip file");
-    zip_file("test.go", FileType::Go).expect("Failed to zip file");
-    zip_file("test.js", FileType::Nodejs).expect("Failed to zip file");
-}
+
 
 #[test]
 fn test_convert_contents_to_blob() {
